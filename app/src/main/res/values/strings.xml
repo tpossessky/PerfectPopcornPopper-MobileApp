@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">Perfect PopcornPopper</string>
+    <string name="app_name">Perfect Popcorn Popper</string>
+    <string name="logo">logo</string>
+    <string name="bluetooth">Bluetooth</string>
+    <string name="pop_status">Pop Status</string>
+    <string name="idle">Idle</string>
+    <string name="disconnect">Disconnect</string>
 </resources>
