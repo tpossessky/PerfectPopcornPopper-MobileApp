@@ -20,7 +20,6 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        getSupportActionBar().hide();
         //timer set at 2 seconds, starts main activity after time expires with custom transition
         new Handler().postDelayed(() -> {
             Intent i = new Intent(SplashActivity.this, MainActivity.class);

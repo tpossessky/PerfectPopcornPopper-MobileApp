@@ -5,4 +5,10 @@
     <string name="pop_status">Pop Status</string>
     <string name="idle">Idle</string>
     <string name="disconnect">Disconnect</string>
+    <string name="connect">Connect Bluetooth Device</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="settings">Settings</string>
+    <string name="home">Home</string>
+
 </resources>
