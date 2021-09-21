@@ -5,29 +5,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.MainFragment">
+    tools:context=".fragments.HomeFragment">
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/find_bluetooth_btn"
+        android:id="@+id/connectBT"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:backgroundTint="@color/primary"
         android:clickable="true"
+        android:contentDescription="@string/bluetooth"
         android:src="@drawable/ic_add"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:contentDescription="@string/bluetooth" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/connectBTText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:fontFamily="@font/lato"
         android:text="@string/connect"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/find_bluetooth_btn" />
+        app:layout_constraintTop_toBottomOf="@+id/connectBT" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
