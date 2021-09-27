@@ -9,7 +9,6 @@ import android.os.IBinder;
 public class BluetoothService extends Service {
     public BluetoothService() {
     }
-
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.

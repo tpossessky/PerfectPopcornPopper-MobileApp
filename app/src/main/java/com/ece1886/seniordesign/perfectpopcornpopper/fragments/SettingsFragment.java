@@ -63,6 +63,7 @@ public class SettingsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         TextView pp = view.findViewById(R.id.privacypolicy);
+        TextView terms = view.findViewById(R.id.terms);
         SwitchCompat nightModeSwitch = view.findViewById(R.id.night_mode);
         /**media**/
         mediaPlayer = MediaPlayer.create (getContext(), R.raw.x);
@@ -82,7 +83,13 @@ public class SettingsFragment extends Fragment {
         editor = preferences.edit();
 
         pp.setOnClickListener(v -> {
-            Uri uri = Uri.parse("http://www.pitt.edu");
+            Uri uri = Uri.parse("https://perfect-popcorn-popp.flycricket.io/privacy.html");
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(intent);
+        });
+
+        terms.setOnClickListener(v -> {
+            Uri uri = Uri.parse("https://perfect-popcorn-popp.flycricket.io/terms.html");
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             startActivity(intent);
         });

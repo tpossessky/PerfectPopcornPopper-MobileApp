@@ -18,6 +18,17 @@
         android:textColor="@android:color/holo_blue_dark"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/terms"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:text="@string/terms_and_conditions"
+        android:textColor="@android:color/holo_blue_dark"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/privacypolicy" />
+
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/night_mode"
         android:layout_width="wrap_content"
@@ -26,7 +37,7 @@
         android:layout_marginTop="32dp"
         android:text="@string/night_mode"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/privacypolicy" />
+        app:layout_constraintTop_toBottomOf="@+id/terms" />
 
     <Button
         android:id="@+id/ohBoy"
