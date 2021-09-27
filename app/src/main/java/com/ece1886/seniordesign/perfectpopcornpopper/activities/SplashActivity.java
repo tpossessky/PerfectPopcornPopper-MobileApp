@@ -24,7 +24,7 @@ public class SplashActivity extends AppCompatActivity {
         new Handler().postDelayed(() -> {
             Intent i = new Intent(SplashActivity.this, MainActivity.class);
             startActivity(i);
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            Bungee.fade(SplashActivity.this);
             finish();
         }, 2000);
     }

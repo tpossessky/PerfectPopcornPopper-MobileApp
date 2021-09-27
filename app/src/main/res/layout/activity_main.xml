@@ -19,7 +19,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-
     <FrameLayout
         android:id="@+id/fragmentContainer"
         android:name="com.ece1886.seniordesign.perfectpopcornpopper.fragments.HomeFragment"

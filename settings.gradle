@@ -1,2 +1,3 @@
+include ':andoirdlibrarymaster'
 include ':app'
 rootProject.name = "Perfect PopcornPopper"

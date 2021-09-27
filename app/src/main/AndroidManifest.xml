@@ -3,6 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.ece1886.seniordesign.perfectpopcornpopper">
 
+    <!--Declare Utilized Permissions-->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!--App only available to users with BLE-->
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -11,20 +21,24 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PerfectPopcornPopper"
         tools:ignore="AllowBackup">
-        <activity android:name=".activities.SplashActivity">
+        <service
+            android:name=".services.BluetoothService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity
+            android:name=".activities.SplashActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <activity
+            android:name=".activities.MainActivity"
+            android:configChanges="uiMode"
+            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="preloaded_fonts"
