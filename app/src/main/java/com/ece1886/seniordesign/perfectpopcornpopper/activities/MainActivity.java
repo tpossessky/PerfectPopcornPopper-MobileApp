@@ -1,13 +1,23 @@
 package com.ece1886.seniordesign.perfectpopcornpopper.activities;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.ece1886.seniordesign.perfectpopcornpopper.R;
 import com.ece1886.seniordesign.perfectpopcornpopper.fragments.HomeFragment;
@@ -52,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //set instance of Notification class
         notificationHandler = NotificationHandler.getInstance(this);
 
+        requestTurnOnBT();
     }
 
     @Override
@@ -74,5 +85,61 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left)
                         .replace(R.id.fragmentContainer, settingsFragment).commit();
         }
+    }
+
+
+    /**
+     * If the user does not have Bluetooth enabled on their device, present a dialog to request
+     * user turns on BLE.
+     */
+    public void requestTurnOnBT(){
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(mBluetoothAdapter == null) {
+            Toast.makeText(this, "Bluetooth not supported!", Toast.LENGTH_LONG).show();
+        }
+        //Create dialog to ask user to turn on BT
+        else if(!mBluetoothAdapter.isEnabled()) {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setMessage("Please enable Bluetooth to use this application.");
+            dialog.setCancelable(true);
+            dialog.setPositiveButton(
+                    "Yes",
+                    (dialog12, id) -> {
+                        mBluetoothAdapter.enable();
+                        dialog12.cancel();
+                    });
+            dialog.setNegativeButton(
+                    "No",
+                    (dialog1, id) -> {
+                        Toast.makeText(getApplicationContext(),
+                                "Turn on Bluetooth to use the app!", Toast.LENGTH_LONG).show();
+                        dialog1.cancel();
+                    });
+
+            AlertDialog alert11 = dialog.create();
+            alert11.show();
+        }
+    }
+
+
+
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if(event.getAction() == MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if(v instanceof EditText) {
+                Rect outRect = new Rect();
+                v.getGlobalVisibleRect(outRect);
+                if (!outRect.contains((int)event.getRawX(), (int)event.getRawY())) {
+                    Log.d("focus", "touchevent");
+                    v.clearFocus();
+                    InputMethodManager imm = (InputMethodManager)
+                            getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event);
     }
 }
