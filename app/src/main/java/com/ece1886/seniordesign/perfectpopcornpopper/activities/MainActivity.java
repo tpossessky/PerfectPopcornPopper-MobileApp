@@ -122,8 +122,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-
-
+    /**
+     * Handles unfocusing text views and other objects that take screen focus
+     * @param event tapping outside the bounds of the view
+     * @return super.dispatchTouchEvent(event);
+     */
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         if(event.getAction() == MotionEvent.ACTION_DOWN) {
