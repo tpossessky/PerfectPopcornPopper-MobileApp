@@ -1,10 +1,12 @@
 package com.ece1886.seniordesign.perfectpopcornpopper.fragments;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.UiModeManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -14,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import android.view.ContextThemeWrapper;
@@ -24,10 +27,13 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ece1886.seniordesign.perfectpopcornpopper.R;
+import com.ece1886.seniordesign.perfectpopcornpopper.activities.MainActivity;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -39,6 +45,10 @@ public class SettingsFragment extends Fragment {
 
     MediaPlayer mediaPlayer;
     Button playMedia;
+
+    public static SettingsFragment newInstance() {
+        return new SettingsFragment();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -65,12 +75,13 @@ public class SettingsFragment extends Fragment {
         TextView pp = view.findViewById(R.id.privacypolicy);
         TextView terms = view.findViewById(R.id.terms);
         SwitchCompat nightModeSwitch = view.findViewById(R.id.night_mode);
+        Button locServ = view.findViewById(R.id.locServ);
+
+
         /**media**/
         mediaPlayer = MediaPlayer.create (getContext(), R.raw.x);
         playMedia = view.findViewById(R.id.ohBoy);
         playMedia.setOnClickListener(v -> mediaPlayer.start());
-
-
 
 
         preferences = getActivity()
@@ -106,5 +117,23 @@ public class SettingsFragment extends Fragment {
 
             getActivity().recreate();
         });
+
+
+        locServ.setOnClickListener(v -> {
+            String requiredPermission = Manifest.permission.ACCESS_FINE_LOCATION;
+            int checkVal = getContext().checkCallingOrSelfPermission(requiredPermission);
+
+            if(checkVal == PackageManager.PERMISSION_GRANTED)
+                Toast.makeText(getActivity(),"Permission already granted!", Toast.LENGTH_LONG)
+                        .show();
+            else
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        1);
+        });
+
+
+
+
     }
 }

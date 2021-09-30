@@ -12,5 +12,6 @@
     <string name="privacy_policy"><u>Privacy Policy</u></string>
     <string name="night_mode">Night Mode</string>
     <string name="terms_and_conditions"><u>Terms and Conditions</u></string>
+    <string name="enable_location_services">Enable Location Services</string>
 
 </resources>

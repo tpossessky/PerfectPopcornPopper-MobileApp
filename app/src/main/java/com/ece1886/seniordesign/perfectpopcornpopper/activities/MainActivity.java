@@ -2,12 +2,12 @@ package com.ece1886.seniordesign.perfectpopcornpopper.activities;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import android.bluetooth.BluetoothAdapter;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,6 +23,7 @@ import com.ece1886.seniordesign.perfectpopcornpopper.R;
 import com.ece1886.seniordesign.perfectpopcornpopper.fragments.HomeFragment;
 import com.ece1886.seniordesign.perfectpopcornpopper.fragments.SettingsFragment;
 import com.ece1886.seniordesign.perfectpopcornpopper.logs.CaptainsLog;
+import com.ece1886.seniordesign.perfectpopcornpopper.services.BluetoothUtil;
 import com.ece1886.seniordesign.perfectpopcornpopper.services.NotificationHandler;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -40,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private NotificationHandler notificationHandler;
     private CaptainsLog logger = CaptainsLog.getInstance();
 
+    //TODO: BLUETOOTH AVAILABILITY CHECK (is BT enabled on device)
+    //TODO:
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +54,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         settingsBtn = findViewById(R.id.settingsBtn);
 
         //set fragments
-        homeFragment = new HomeFragment();
-
-        settingsFragment = new SettingsFragment();
+        homeFragment = HomeFragment.newInstance();
+        settingsFragment = SettingsFragment.newInstance();
         fragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, homeFragment).commit();
 
@@ -62,21 +64,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //set instance of Notification class
         notificationHandler = NotificationHandler.getInstance(this);
 
-        requestTurnOnBT();
     }
 
+    /**
+     * Global onClick listener for the activity handling app navigation
+     * @param v button being clicked
+     */
     @Override
     public void onClick(View v) {
-        logger.log("View ID", String.valueOf(v.getId()));
-        logger.log("Home ID", String.valueOf(v.getId()));
-        logger.log("Setting ID", String.valueOf(settingsBtn.getId()));
-
         final int btnID = v.getId();
         if(btnID == homeBtn.getId()){
             notificationHandler.createNotification(this, "Your popcorn is ready!");
             if(!homeFragment.isResumed())
                 fragmentManager.beginTransaction()
-                        .setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
+                        .setCustomAnimations(
+                                android.R.anim.slide_in_left,
+                                android.R.anim.slide_out_right)
                         .replace(R.id.fragmentContainer, homeFragment).commit();
         }
         else if(btnID == settingsBtn.getId()){
@@ -86,7 +89,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .replace(R.id.fragmentContainer, settingsFragment).commit();
         }
     }
-
 
     /**
      * If the user does not have Bluetooth enabled on their device, present a dialog to request
@@ -138,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d("focus", "touchevent");
                     v.clearFocus();
                     InputMethodManager imm = (InputMethodManager)
-                            getSystemService(Context.INPUT_METHOD_SERVICE);
+                            getSystemService(this.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 }
             }

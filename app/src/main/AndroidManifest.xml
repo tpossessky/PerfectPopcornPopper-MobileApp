@@ -21,10 +21,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PerfectPopcornPopper"
         tools:ignore="AllowBackup">
+
         <service
             android:name=".services.BluetoothService"
             android:enabled="true"
-            android:exported="true" />
+            android:foregroundServiceType="location"
+            android:exported="false" />
 
         <activity
             android:name=".activities.SplashActivity"
