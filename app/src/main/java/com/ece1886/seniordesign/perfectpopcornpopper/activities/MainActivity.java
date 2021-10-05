@@ -1,5 +1,6 @@
 package com.ece1886.seniordesign.perfectpopcornpopper.activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -7,7 +8,10 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
+import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,7 +19,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -23,7 +26,6 @@ import com.ece1886.seniordesign.perfectpopcornpopper.R;
 import com.ece1886.seniordesign.perfectpopcornpopper.fragments.HomeFragment;
 import com.ece1886.seniordesign.perfectpopcornpopper.fragments.SettingsFragment;
 import com.ece1886.seniordesign.perfectpopcornpopper.logs.CaptainsLog;
-import com.ece1886.seniordesign.perfectpopcornpopper.services.BluetoothUtil;
 import com.ece1886.seniordesign.perfectpopcornpopper.services.NotificationHandler;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -64,6 +66,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //set instance of Notification class
         notificationHandler = NotificationHandler.getInstance(this);
 
+        //check if user has given us permission
+        if(!checkIfAlreadyGavePermission())
+            requestLocationPermission();
+
+        //TODO: ADD TO BLE BTN
+        requestTurnOnBT();
     }
 
     /**
@@ -147,4 +155,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         return super.dispatchTouchEvent(event);
     }
+
+
+    /**
+     * Requests user location permission for BLE
+     */
+    @TargetApi(26)
+    public void requestLocationPermission(){
+        ActivityCompat.requestPermissions(MainActivity.this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                1);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if(requestCode == 101)
+            if(grantResults[0] != PackageManager.PERMISSION_GRANTED)
+                Toast.makeText(this, "Location permission required for Bluetooth",
+                        Toast.LENGTH_LONG).show();
+         else
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    /**
+     * Checks if the user has granted location access required in API 26+
+     * @return
+     */
+    @TargetApi(26)
+    private boolean checkIfAlreadyGavePermission() {
+        int result = ContextCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION);
+
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
 }

@@ -4,8 +4,9 @@
     package="com.ece1886.seniordesign.perfectpopcornpopper">
 
     <!--Declare Utilized Permissions-->
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH" android:required="true"/>
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:required="true"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <!--App only available to users with BLE-->
