@@ -68,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(!checkIfAlreadyGavePermission())
             requestLocationPermission();
 
-        //TODO: ADD TO BLE BTN
         requestTurnOnBT();
     }
 
