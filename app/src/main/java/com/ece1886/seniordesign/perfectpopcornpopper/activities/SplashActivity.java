@@ -34,7 +34,6 @@ public class SplashActivity extends AppCompatActivity {
         if(nightMode && !(currentNightMode == Configuration.UI_MODE_NIGHT_YES)){
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         }
-
         setContentView(R.layout.activity_splash);
         //timer set at 2 seconds, starts main activity after time expires with custom transition
         new Handler().postDelayed(() -> {

@@ -27,13 +27,14 @@ import java.util.Objects;
  * create an instance of this fragment.
  */
 public class HomeFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    /**
+     * TODO: After Clicking ConnectBT BTN, AlertDialog only showing OUR device
+     *  (UUID?, Advertising Packet?). From there show connection on screen with option to disconnect
+     *  Figure out UI for Popping/Getting Data
+     *
+     */
     private FloatingActionButton connectBT;
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -42,8 +43,6 @@ public class HomeFragment extends Fragment {
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
-     *
-
      * @return A new instance of fragment HomeFragment.
      */
     public static HomeFragment newInstance() {

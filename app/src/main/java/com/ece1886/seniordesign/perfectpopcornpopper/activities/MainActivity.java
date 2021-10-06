@@ -43,8 +43,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private NotificationHandler notificationHandler;
     private CaptainsLog logger = CaptainsLog.getInstance();
 
-    //TODO: BLUETOOTH AVAILABILITY CHECK (is BT enabled on device)
-    //TODO:
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

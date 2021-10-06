@@ -13,5 +13,6 @@
     <string name="night_mode">Night Mode</string>
     <string name="terms_and_conditions"><u>Terms and Conditions</u></string>
     <string name="enable_location_services">Enable Location Services</string>
+    <string name="connected">Connected:</string>
 
 </resources>
