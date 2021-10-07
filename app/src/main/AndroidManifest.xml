@@ -12,7 +12,8 @@
     <!--App only available to users with BLE-->
     <uses-feature
         android:name="android.hardware.bluetooth_le"
-        android:required="true" />
+        android:required="true"
+        tools:ignore="DuplicateUsesFeature" />
 
     <application
         android:allowBackup="true"

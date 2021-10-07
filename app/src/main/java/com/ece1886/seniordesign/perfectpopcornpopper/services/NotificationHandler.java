@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 import com.ece1886.seniordesign.perfectpopcornpopper.R;
 import com.ece1886.seniordesign.perfectpopcornpopper.activities.MainActivity;
@@ -58,7 +59,7 @@ public class NotificationHandler {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context, "PPP")
                 .setSmallIcon(R.drawable.ic_notification) // notification icon
-                .setColor(context.getResources().getColor(R.color.white))
+                .setColor(ContextCompat.getColor(context, R.color.white))
                 .setContentTitle("Perfect Popcorn Popper") // main title of the notification
                 .setContentText(msg) // notification text
                 .setContentIntent(resultPending); // notification intent
