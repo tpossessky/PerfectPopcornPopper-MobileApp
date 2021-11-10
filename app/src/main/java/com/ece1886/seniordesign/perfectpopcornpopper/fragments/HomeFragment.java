@@ -3,16 +3,21 @@ package com.ece1886.seniordesign.perfectpopcornpopper.fragments;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,10 +39,15 @@ import androidx.fragment.app.Fragment;
 
 import com.ece1886.seniordesign.perfectpopcornpopper.R;
 import com.ece1886.seniordesign.perfectpopcornpopper.logs.CaptainsLog;
+import com.ece1886.seniordesign.perfectpopcornpopper.services.BluetoothLeService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+
+import static android.content.Context.BIND_AUTO_CREATE;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -45,54 +55,81 @@ import java.util.List;
  * create an instance of this fragment.
  */
 public class HomeFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener {
-    /**
-     * TODO: After Clicking ConnectBT BTN, AlertDialog only showing OUR device
-     *  (UUID?, Advertising Packet?). From there show connection on screen with option to disconnect
-     *  Figure out UI for Popping/Getting Data
-     */
+
     private Context mContext;
     private FloatingActionButton connectBT;
     private ImageButton disconnectBT;
     private ProgressBar progressBar;
-    private TextView startConnectText, searchingText, connectLabel, macAddress;
+    private TextView startConnectText, searchingText, connectLabel, macAddress, bleDataTester;
     private ArrayList<String> deviceNames = new ArrayList<>();
-//    private ArrayList<BluetoothDevice> devices;
-    private BluetoothGatt mBluetoothGatt;
     private AlertDialog alertDialog;
     private BluetoothManager manager;
-
+    private BluetoothAdapter mBLEAdapter;
+    private Handler mHandler;
+    private final String TAG = "HomeFragment";
+    private static final long SCAN_PERIOD = 2500;
+    private boolean scanning = false;
+    private BluetoothLeService bleService;
     private CaptainsLog captainsLog = CaptainsLog.getInstance();
 
+    private String deviceAddress;
+    private String deviceName;
+
     ArrayList<BluetoothDevice> bleDevices = new ArrayList<>();
-    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-    private final BroadcastReceiver devicesFoundReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
+    //TODO: Uncomment for current BLE usage
+//    private final BroadcastReceiver devicesFoundReceiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            String action = intent.getAction();
+//
+//            if(BluetoothDevice.ACTION_FOUND.equals(action)){
+//                //add BLE device to list
+//                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+//                if(device.getName() != null){
+//                    bleDevices.add(device);
+//                    deviceNames.add(device.getName());
+//                }
+//            }
+//            else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
+//                progressBar.setVisibility(View.GONE);
+//                showAlertDialog();
+//            }
+//            else if(BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)){
+//                //start looking for BLE devices
+//                progressBar.setVisibility(View.VISIBLE);
+//                searchingText.setVisibility(View.VISIBLE);
+//                startConnectText.setVisibility(View.GONE);
+//                connectLabel.setVisibility(View.GONE);
+//                connectBT.setVisibility(View.GONE);
+//            }
+//        }
+//    };
 
-            if(BluetoothDevice.ACTION_FOUND.equals(action)){
-                //add BLE device to list
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if(device.getName() != null){
-                    bleDevices.add(device);
-                    deviceNames.add(device.getName());
-                }
-            }
-            else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
+    private void scanBleDevice(final boolean enable) {
+        if (enable) {
+            // Stops scanning after a pre-defined scan period.
+            mHandler.postDelayed(() -> {
+                scanning = false;
+                mBLEAdapter.stopLeScan(mBleScanCallback);
                 progressBar.setVisibility(View.GONE);
                 showAlertDialog();
-            }
-            else if(BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)){
-                //start looking for BLE devices
+            }, SCAN_PERIOD);
+
+            scanning = true;
+            mBLEAdapter.startLeScan(mBleScanCallback);
                 progressBar.setVisibility(View.VISIBLE);
                 searchingText.setVisibility(View.VISIBLE);
                 startConnectText.setVisibility(View.GONE);
                 connectLabel.setVisibility(View.GONE);
                 connectBT.setVisibility(View.GONE);
-            }
+
+        } else {
+            scanning = false;
+            mBLEAdapter.stopLeScan(mBleScanCallback);
+            progressBar.setVisibility(View.GONE);
         }
-    };
+    }
 
 
     public HomeFragment() {
@@ -100,21 +137,18 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
     }
 
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     * @return A new instance of fragment HomeFragment.
-     */
     public static HomeFragment newInstance() {
         return new HomeFragment();
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
 
-
+    /**
+     * Only handles SharedPreferences for NightMode
+     * @param inflater don't care
+     * @param container don't care
+     * @param savedInstanceState don't care
+     * @return don't care
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -122,13 +156,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
 
         mContext = getContext();
         assert mContext != null;
-        manager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
-        requireActivity().registerReceiver(devicesFoundReceiver,
-                new IntentFilter(BluetoothDevice.ACTION_FOUND));
-        requireActivity().registerReceiver(devicesFoundReceiver,
-                new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED));
-        requireActivity().registerReceiver(devicesFoundReceiver,
-                new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 
         //NIGHT MODE CODE
         SharedPreferences preferences = requireActivity()
@@ -148,10 +175,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        // BLUETOOTH SERVICE STUFF
-        // FAB onClick listener
-        //startService(new Intent(this, BluetoothService.class));
-        //stopService(new Intent(this, BluetoothService.class));
 
         //find UI elements in view
         //FAB
@@ -170,19 +193,34 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
         connectLabel.setVisibility(View.GONE);
         macAddress.setVisibility(View.GONE);
         disconnectBT.setVisibility(View.GONE);
-
+        //set onClickListeners for UI buttons
         connectBT.setOnClickListener(this);
         disconnectBT.setOnClickListener(this);
-        //starts BT service when button clicked
-//        connectBT.setOnClickListener(v ->
-//                getActivity().startForegroundService(new Intent(getActivity(), BluetoothService.class)));
+
+        //ble data
+        bleDataTester = view.findViewById(R.id.bleData);
+
+        final BluetoothManager bluetoothManager =
+                (BluetoothManager) getContext().getSystemService(Context.BLUETOOTH_SERVICE);
+        mBLEAdapter = bluetoothManager.getAdapter();
+        mHandler = new Handler(Looper.getMainLooper());
     }
 
 
+    //works
+    private BluetoothAdapter.LeScanCallback mBleScanCallback = (device, rssi, scanRecord) -> {
+        if(device.getName() != null && !bleDevices.contains(device)){
+            bleDevices.add(device);
+            deviceNames.add(device.getName());
+            captainsLog.log("SCAN CALLBACK", device.getName() + " " + device.getAddress(), CaptainsLog.LogLevel.WTF);
+        }
+    };
+
+    //works
     @Override
     public void onClick(View v) {
         if(v.getId() == R.id.connectBT){
-            bluetoothAdapter.startDiscovery();
+            scanBleDevice(true);
         }
         else if(v.getId() == R.id.disconnectBT){
             disconnectBLEDevice();
@@ -192,59 +230,23 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
     @Override
     public void onDestroy() {
         super.onDestroy();
+        bleService.close();
     }
 
     @Override
     public void onPause() {
-        mContext.unregisterReceiver(devicesFoundReceiver);
         super.onPause();
+        scanBleDevice(false);
     }
-    //CLASSIC BT SCAN
-//    private void discoverBT(){
-//        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-//        IntentFilter filter = new IntentFilter();
-//
-//        filter.addAction(BluetoothDevice.ACTION_FOUND);
-//        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-//        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-//
-//        requireActivity().registerReceiver(mReceiver, filter);
-//        adapter.startDiscovery();
-//    }
-//    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-//        public void onReceive(Context context, Intent intent) {
-//            String action = intent.getAction();
-//
-//            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-//                progressBar.setVisibility(View.VISIBLE);
-//            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-//                progressBar.setVisibility(View.GONE);
-//                showAlertDialog();
-//            } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-//                //bluetooth device found
-//                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-//
-//                if(device.getName() != null && !deviceNames.contains(device.getName())){
-//                    Log.wtf("HomeFragment", device.getName());
-//                    deviceNames.add(device.getName());
-//                    devices.add(device);
-//                }
-//            }
-//        }
-//    };
+
 
     private void disconnectBLEDevice(){
        AlertDialog.Builder builder = new AlertDialog.Builder(mContext)
                .setTitle("Disconnect Bluetooth")
                .setMessage("Are you sure you would like to disconnect?")
                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                   mBluetoothGatt.disconnect();
                     dialog.cancel();
-                    connectLabel.setVisibility(View.GONE);
-                    macAddress.setVisibility(View.GONE);
-                    disconnectBT.setVisibility(View.GONE);
-                    connectBT.setVisibility(View.VISIBLE);
-                    startConnectText.setVisibility(View.VISIBLE);
+                    bleService.disconnect();
                })
                .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.cancel());
                 builder.show();
@@ -255,9 +257,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
      * Main Alert Dialog for Connecting to a BLE device
      */
     private void showAlertDialog(){
-
         for(BluetoothDevice device : bleDevices)
-            Log.wtf("Log ",device.getName());
+            Log.wtf("Alert Dialog Names ",device.getName());
 
         LayoutInflater inflater = getLayoutInflater();
         View dialog = inflater.inflate(R.layout.btlist_alert_dialog, null);
@@ -288,35 +289,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
         Log.wtf("ID", String.valueOf(id));
 
         Log.wtf("Name of Item", bleDevices.get(position).getName());
-        BluetoothDevice device = bluetoothAdapter.getRemoteDevice(bleDevices.get(position).getAddress());
-        device.connectGatt(mContext,false, bluetoothGattCallback);
-
+        Log.wtf("Address of Item", bleDevices.get(position).getAddress());
+        deviceName = bleDevices.get(position).getName();
+        deviceAddress = bleDevices.get(position).getAddress();
+        bleService.connect(deviceAddress);
+        deviceConnectedUIUpdates();
     }
 
-    private final BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                Log.wtf("GATT CALLBACK", "CONNECTED");
-                mBluetoothGatt = gatt;
-                deviceConnectedUIUpdates();
-
-                List<BluetoothDevice> connectedDevices
-                        = manager.getConnectedDevices(BluetoothProfile.GATT);
-
-                for(BluetoothDevice device : connectedDevices)
-                    captainsLog.log("Connected Devices",
-                            device.getName()+" "+device.getAddress(),CaptainsLog.LogLevel.WTF);
-
-
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Log.wtf("GATT CALLBACK", "DISCONNECTED");
-                requireActivity().runOnUiThread(() ->{
-                    Toast.makeText(mContext, "Device Disconnected", Toast.LENGTH_LONG).show();
-                });
-            }
-        }
-    };
 
     private void deviceConnectedUIUpdates(){
         requireActivity().runOnUiThread(() -> {
@@ -324,10 +303,92 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
                 alertDialog.cancel();
             connectLabel.setVisibility(View.VISIBLE);
             macAddress.setVisibility(View.VISIBLE);
+            macAddress.setText(deviceAddress);
             searchingText.setVisibility(View.GONE);
-            macAddress.setText(mBluetoothGatt.getDevice().getAddress());
             disconnectBT.setVisibility(View.VISIBLE);
             Toast.makeText(mContext, "Device Connected!", Toast.LENGTH_LONG).show();
+            Set<BluetoothDevice> pairedDevices = mBLEAdapter.getBondedDevices();
+            if (pairedDevices.size() > 0) {
+                // There are paired devices. Get the name and address of each paired device.
+                for (BluetoothDevice device : pairedDevices) {
+                    String deviceName = device.getName();
+                    String deviceHardwareAddress = device.getAddress(); // MAC address
+                    Log.wtf("Connected Devices", deviceName + " " + deviceHardwareAddress);
+                }
+            }
         });
+    }
+
+    private void deviceDisconnectedUIUpdates(){
+        requireActivity().runOnUiThread(() -> {
+            connectLabel.setVisibility(View.GONE);
+            macAddress.setVisibility(View.GONE);
+            disconnectBT.setVisibility(View.GONE);
+            connectBT.setVisibility(View.VISIBLE);
+            startConnectText.setVisibility(View.VISIBLE);
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getContext().registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        Intent gattServiceIntent = new Intent(getActivity(), BluetoothLeService.class);
+        getActivity().bindService(gattServiceIntent, serviceConnection, BIND_AUTO_CREATE);
+    }
+
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
+                deviceConnectedUIUpdates();
+                Log.wtf("BROADCAST RECEIVER", "CONNECTED");
+
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                deviceDisconnectedUIUpdates();
+                Log.wtf("BROADCAST RECEIVER", "DISCONNECTED");
+            }
+
+            else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                Log.wtf(TAG, "Services were discovered");
+                bleService.getSupportedGattServices();
+            }
+
+            else if (BluetoothLeService.ACTION_DATA_READ_COMPLETED.equals(action)) {
+                Log.wtf(TAG, "Data Read Completed");
+            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                Log.wtf(TAG, "Battery level on main activity: " + intent.getStringExtra(BluetoothLeService.ACTION_BATTERY_LEVEL));
+                bleDataTester.setText(intent.getStringExtra(BluetoothLeService.ACTION_BATTERY_LEVEL));
+            }
+        }
+    };
+
+
+
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            bleService = ((BluetoothLeService.LocalBinder) service).getService();
+            Log.wtf("SERVICE_CONNECTION", "SERVICE CONNECTED");
+            bleService.initialize();
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            bleService = null;
+            Log.wtf("SERVICE_CONNECTION", "SERVICE DISCONNECTED");
+
+        }
+    };
+
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_READ_COMPLETED);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
     }
 }

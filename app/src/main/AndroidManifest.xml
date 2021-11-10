@@ -8,6 +8,9 @@
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:required="true"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!--App only available to users with BLE-->
     <uses-feature
@@ -25,7 +28,7 @@
         tools:ignore="AllowBackup">
 
         <service
-            android:name=".services.BluetoothService"
+            android:name=".services.BluetoothLeService"
             android:enabled="true"
             android:foregroundServiceType="location"
             android:exported="false" />
@@ -41,8 +44,8 @@
         </activity>
         <activity
             android:name=".activities.MainActivity"
-            android:configChanges="uiMode"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|uiMode"/>
 
         <meta-data
             android:name="preloaded_fonts"
