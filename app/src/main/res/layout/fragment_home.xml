@@ -48,7 +48,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:text="00:00:00:00"
+        android:text=""
         app:layout_constraintBottom_toBottomOf="@+id/connectLabel"
         app:layout_constraintStart_toEndOf="@+id/connectLabel"
         app:layout_constraintTop_toTopOf="@+id/connectLabel" />
@@ -62,7 +62,8 @@
         android:src="@drawable/ic_close_bt"
         app:layout_constraintBottom_toBottomOf="@+id/macAddress"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/macAddress" />
+        app:layout_constraintTop_toTopOf="@+id/macAddress"
+        android:contentDescription="@string/disconnect" />
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -89,9 +90,10 @@
         android:id="@+id/bleDataLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="64dp"
-        android:text="BLE DATA: "
+        android:layout_marginStart="64dp"
+        android:layout_marginBottom="128dp"
+        android:fontFamily="@font/lato"
+        android:text="@string/pops"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -100,7 +102,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="TextView"
+        android:fontFamily="@font/lato"
+        android:text=""
         app:layout_constraintStart_toEndOf="@+id/bleDataLabel"
         app:layout_constraintTop_toTopOf="@+id/bleDataLabel" />
 

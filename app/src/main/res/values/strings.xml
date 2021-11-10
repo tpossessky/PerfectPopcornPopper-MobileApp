@@ -16,5 +16,6 @@
     <string name="connected">Connected:</string>
     <string name="tap_to_connect"><u>Tap To Connect</u></string>
     <string name="searching_for_bluetooth_devices">Searching For Bluetooth Devices</string>
+    <string name="pops">Pops:</string>
 
 </resources>

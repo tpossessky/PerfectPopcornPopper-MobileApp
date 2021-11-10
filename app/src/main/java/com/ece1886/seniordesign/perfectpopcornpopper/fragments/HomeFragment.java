@@ -40,6 +40,7 @@ import androidx.fragment.app.Fragment;
 import com.ece1886.seniordesign.perfectpopcornpopper.R;
 import com.ece1886.seniordesign.perfectpopcornpopper.logs.CaptainsLog;
 import com.ece1886.seniordesign.perfectpopcornpopper.services.BluetoothLeService;
+import com.ece1886.seniordesign.perfectpopcornpopper.services.NotificationHandler;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -71,9 +72,16 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
     private boolean scanning = false;
     private BluetoothLeService bleService;
     private CaptainsLog captainsLog = CaptainsLog.getInstance();
-
+    private int mPops = 0;
     private String deviceAddress;
     private String deviceName;
+    private NotificationHandler mNotificationHandler;
+
+
+
+    private static final String INCREMENT_POPS = "AAAA";
+    private static final String THIRTY_SECONDS = "BBBB";
+    private static final String TEN_SECONDS = "CCCC";
 
     ArrayList<BluetoothDevice> bleDevices = new ArrayList<>();
 
@@ -196,6 +204,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
         //set onClickListeners for UI buttons
         connectBT.setOnClickListener(this);
         disconnectBT.setOnClickListener(this);
+
+        mNotificationHandler = NotificationHandler.getInstance(getActivity());
+
+
 
         //ble data
         bleDataTester = view.findViewById(R.id.bleData);
@@ -354,12 +366,27 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
                 Log.wtf(TAG, "Services were discovered");
                 bleService.getSupportedGattServices();
             }
-
             else if (BluetoothLeService.ACTION_DATA_READ_COMPLETED.equals(action)) {
                 Log.wtf(TAG, "Data Read Completed");
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                Log.wtf(TAG, "Battery level on main activity: " + intent.getStringExtra(BluetoothLeService.ACTION_BATTERY_LEVEL));
-                bleDataTester.setText(intent.getStringExtra(BluetoothLeService.ACTION_BATTERY_LEVEL));
+                String bleData = intent.getStringExtra(BluetoothLeService.ACTION_BATTERY_LEVEL);
+                bleData = bleData.replaceAll("\\s", "");
+                Log.wtf(TAG, "Received data: " + bleData);
+
+                switch (bleData){
+                    case INCREMENT_POPS:
+                        mPops++;
+                        bleDataTester.setText(mPops);
+                        break;
+                    case THIRTY_SECONDS:
+                        mNotificationHandler.createNotification(getActivity(), "30 seconds remaining on your popcorn!");
+                        break;
+                    case TEN_SECONDS:
+                        mNotificationHandler.createNotification(getActivity(), "10 seconds remaining on your popcorn!");
+                        break;
+                    default:
+                        Log.wtf("Data Received not correct", bleData);
+                }
             }
         }
     };

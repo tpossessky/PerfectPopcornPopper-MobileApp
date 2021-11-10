@@ -220,6 +220,8 @@ public class BluetoothLeService extends Service {
     }
 
     private final IBinder binder = new LocalBinder();
+
+
     /**
      * Initializes a reference to the local Bluetooth adapter.
      *
@@ -246,6 +248,8 @@ public class BluetoothLeService extends Service {
 
         return true;
     }
+
+
     /**
      * Connects to the GATT server hosted on the Bluetooth LE device.
      *
@@ -330,7 +334,7 @@ public class BluetoothLeService extends Service {
         if(characteristic == null)
             Log.wtf("setCharacteristicNotification", "NULL CHARACTERISTIC");
 
-
+        Log.wtf("setCharacteristicNotification", String.valueOf(characteristic.getUuid()));
         bleGatt.setCharacteristicNotification(characteristic, enabled);
 
         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(GattAttributes.CHARACTERISTIC_UPDATE_NOTIFICATION_DESCRIPTOR_UUID));
