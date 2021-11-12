@@ -19,6 +19,7 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -117,6 +118,12 @@ public class BluetoothLeService extends Service {
         }
 
         @Override
+        public void onPhyRead(BluetoothGatt gatt, int txPhy, int rxPhy, int status) {
+            super.onPhyRead(gatt, txPhy, rxPhy, status);
+            Log.wtf("onPhyRead called", "on phy read");
+        }
+
+        @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
@@ -144,6 +151,24 @@ public class BluetoothLeService extends Service {
                 }
             }
         }
+
+
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            super.onCharacteristicChanged(gatt, characteristic);
+            Log.wtf("ONCHARACTERISTICCHANGED", "SOMETHING HAPPENED");
+            readCharacteristic(characteristic);
+//            final byte[] data = characteristic.getValue();
+//
+//            if (data != null && data.length > 0) {
+//                final StringBuilder stringBuilder = new StringBuilder(data.length);
+//
+//                for (byte byteChar : data)
+//                    stringBuilder.append(String.format("%02X ", byteChar));
+//                Log.wtf("BROADCAST UPDATE BLEService", stringBuilder.toString());
+//                setCharacteristicNotification(characteristic, true);
+//            }
+        }
     };
 
     public int isDataCharacteristic(BluetoothGattCharacteristic characteristic) {
@@ -161,6 +186,8 @@ public class BluetoothLeService extends Service {
             return 0;
 //        }
     }
+
+
 
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
@@ -189,7 +216,12 @@ public class BluetoothLeService extends Service {
 
                     for (byte byteChar : data)
                         stringBuilder.append(String.format("%02X ", byteChar));
+
                     Log.wtf("BROADCAST UPDATE BLEService", stringBuilder.toString());
+                    Log.wtf("Length of Data", String.valueOf(data.length));
+                    String s = new String(data, StandardCharsets.UTF_8);
+                    Log.wtf("String Value of Data", s);
+
                     intent.putExtra(ACTION_BATTERY_LEVEL, stringBuilder.toString());
                     setCharacteristicNotification(characteristic, true);
                 }
@@ -294,6 +326,8 @@ public class BluetoothLeService extends Service {
         }
         bleGatt.disconnect();
     }
+
+
     /**
      * After using a given BLE device, the app must call this method to ensure resources are
      * released properly.
@@ -305,6 +339,8 @@ public class BluetoothLeService extends Service {
         bleGatt.close();
         bleGatt = null;
     }
+
+
     /**
      * Request a read on a given {@code BluetoothGattCharacteristic}. The read result is reported
      * asynchronously through the {@code BluetoothGattCallback#onCharacteristicRead(android.bluetooth.BluetoothGatt, android.bluetooth.BluetoothGattCharacteristic, int)}
@@ -352,13 +388,15 @@ public class BluetoothLeService extends Service {
     public List<BluetoothGattService> getSupportedGattServices() {
         if (bleGatt == null) return null;
         List<BluetoothGattService> services = bleGatt.getServices();
-
         for(BluetoothGattService service : services){
-            if(String.valueOf(service.getUuid()).equals("b7dc42cb-f1b3-430c-a853-84bb6d17997a")){
+            Log.wtf("Services", String.valueOf(service.getUuid()));
+            if(String.valueOf(service.getUuid()).equals("00110011-4455-6677-8899-aabbccddeeff")){
                 List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
                 for(BluetoothGattCharacteristic characteristic : characteristics){
-                    if(String.valueOf(characteristic.getUuid()).equals("3618b05c-bc4a-41d2-b96d-ae491a9bfa78")){
-                        readCharacteristic(characteristic);
+                    Log.wtf("Characteristic", String.valueOf(characteristic.getUuid()));
+                    if(String.valueOf(characteristic.getUuid()).equals("00000002-0000-1000-8000-00805f9b34fb")){
+                        setCharacteristicNotification(characteristic, true);
+                        break;
                     }
                 }
             }

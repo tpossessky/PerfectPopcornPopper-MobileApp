@@ -379,10 +379,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
                         bleDataTester.setText(mPops);
                         break;
                     case THIRTY_SECONDS:
-                        mNotificationHandler.createNotification(getActivity(), "30 seconds remaining on your popcorn!");
+                        mNotificationHandler.createNotification(requireActivity(), "30 seconds remaining on your popcorn!");
                         break;
                     case TEN_SECONDS:
-                        mNotificationHandler.createNotification(getActivity(), "10 seconds remaining on your popcorn!");
+                        mNotificationHandler.createNotification(requireActivity(), "10 seconds remaining on your popcorn!");
                         break;
                     default:
                         Log.wtf("Data Received not correct", bleData);
