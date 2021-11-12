@@ -40,15 +40,15 @@ public class BluetoothLeService extends Service {
     private BluetoothGatt bleGatt;
     private BluetoothGattCharacteristic notifyCharacteristics;
 
-    private int connectionState = STATE_DISCONNECTED;
+    public int connectionState = STATE_DISCONNECTED;
     List<BluetoothGattCharacteristic> chars = new ArrayList<>();
 
     private int batteryLevel;
     private boolean sweepComplete = false;
 
-    private static final int STATE_DISCONNECTED = 0;
-    private static final int STATE_CONNECTING = 1;
-    private static final int STATE_CONNECTED = 2;
+    public static final int STATE_DISCONNECTED = 0;
+    public static final int STATE_CONNECTING = 1;
+    public static final int STATE_CONNECTED = 2;
 
     public final static String ACTION_GATT_CONNECTED = "ACTION_GATT_CONNECTED";
     public final static String ACTION_GATT_DISCONNECTED = "ACTION_GATT_DISCONNECTED";
@@ -312,6 +312,8 @@ public class BluetoothLeService extends Service {
         connectionState = STATE_CONNECTING;
         return true;
     }
+
+
     /**
      * Disconnects an existing connection or cancel a pending connection. The disconnection result
      * is reported asynchronously through the
@@ -338,7 +340,6 @@ public class BluetoothLeService extends Service {
         bleGatt.close();
         bleGatt = null;
     }
-
 
     /**
      * Request a read on a given {@code BluetoothGattCharacteristic}. The read result is reported
@@ -398,6 +399,7 @@ public class BluetoothLeService extends Service {
                         break;
                     }
                 }
+                break;
             }
         }
         return services;

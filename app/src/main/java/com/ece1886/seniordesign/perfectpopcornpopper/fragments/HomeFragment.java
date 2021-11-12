@@ -43,6 +43,7 @@ import com.ece1886.seniordesign.perfectpopcornpopper.services.BluetoothLeService
 import com.ece1886.seniordesign.perfectpopcornpopper.services.NotificationHandler;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -77,42 +78,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
     private String deviceName;
     private NotificationHandler mNotificationHandler;
 
-
-
-    private static final String INCREMENT_POPS = "AAAA";
-    private static final String THIRTY_SECONDS = "BBBB";
-    private static final String TEN_SECONDS = "CCCC";
+    //Expected Data from Bluetooth Characteristic
+    private static final String INCREMENT_POPS = "41414141";
+    private static final String THIRTY_SECONDS = "42424242";
+    private static final String TEN_SECONDS = "43434343";
 
     ArrayList<BluetoothDevice> bleDevices = new ArrayList<>();
-
-    //TODO: Uncomment for current BLE usage
-//    private final BroadcastReceiver devicesFoundReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            String action = intent.getAction();
-//
-//            if(BluetoothDevice.ACTION_FOUND.equals(action)){
-//                //add BLE device to list
-//                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-//                if(device.getName() != null){
-//                    bleDevices.add(device);
-//                    deviceNames.add(device.getName());
-//                }
-//            }
-//            else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
-//                progressBar.setVisibility(View.GONE);
-//                showAlertDialog();
-//            }
-//            else if(BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)){
-//                //start looking for BLE devices
-//                progressBar.setVisibility(View.VISIBLE);
-//                searchingText.setVisibility(View.VISIBLE);
-//                startConnectText.setVisibility(View.GONE);
-//                connectLabel.setVisibility(View.GONE);
-//                connectBT.setVisibility(View.GONE);
-//            }
-//        }
-//    };
 
     private void scanBleDevice(final boolean enable) {
         if (enable) {
@@ -269,8 +240,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
      * Main Alert Dialog for Connecting to a BLE device
      */
     private void showAlertDialog(){
-        for(BluetoothDevice device : bleDevices)
-            Log.wtf("Alert Dialog Names ",device.getName());
 
         LayoutInflater inflater = getLayoutInflater();
         View dialog = inflater.inflate(R.layout.btlist_alert_dialog, null);
@@ -297,11 +266,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Log.wtf("ItemClick", String.valueOf(position));
-        Log.wtf("ID", String.valueOf(id));
-
-        Log.wtf("Name of Item", bleDevices.get(position).getName());
-        Log.wtf("Address of Item", bleDevices.get(position).getAddress());
         deviceName = bleDevices.get(position).getName();
         deviceAddress = bleDevices.get(position).getAddress();
         bleService.connect(deviceAddress);
@@ -311,23 +275,23 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
 
     private void deviceConnectedUIUpdates(){
         requireActivity().runOnUiThread(() -> {
-            if(alertDialog.isShowing())
-                alertDialog.cancel();
-            connectLabel.setVisibility(View.VISIBLE);
-            macAddress.setVisibility(View.VISIBLE);
-            macAddress.setText(deviceAddress);
-            searchingText.setVisibility(View.GONE);
-            disconnectBT.setVisibility(View.VISIBLE);
-            Toast.makeText(mContext, "Device Connected!", Toast.LENGTH_LONG).show();
-            Set<BluetoothDevice> pairedDevices = mBLEAdapter.getBondedDevices();
-            if (pairedDevices.size() > 0) {
-                // There are paired devices. Get the name and address of each paired device.
-                for (BluetoothDevice device : pairedDevices) {
-                    String deviceName = device.getName();
-                    String deviceHardwareAddress = device.getAddress(); // MAC address
-                    Log.wtf("Connected Devices", deviceName + " " + deviceHardwareAddress);
+                if (alertDialog.isShowing())
+                    alertDialog.cancel();
+                connectLabel.setVisibility(View.VISIBLE);
+                macAddress.setVisibility(View.VISIBLE);
+                macAddress.setText(deviceAddress);
+                searchingText.setVisibility(View.GONE);
+                disconnectBT.setVisibility(View.VISIBLE);
+                Toast.makeText(mContext, "Device Connected!", Toast.LENGTH_LONG).show();
+                Set<BluetoothDevice> pairedDevices = mBLEAdapter.getBondedDevices();
+                if (pairedDevices.size() > 0) {
+                    // There are paired devices. Get the name and address of each paired device.
+                    for (BluetoothDevice device : pairedDevices) {
+                        String deviceName = device.getName();
+                        String deviceHardwareAddress = device.getAddress(); // MAC address
+                        Log.wtf("Connected Devices", deviceName + " " + deviceHardwareAddress);
+                    }
                 }
-            }
         });
     }
 
@@ -370,6 +334,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Adap
                 Log.wtf(TAG, "Data Read Completed");
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 String bleData = intent.getStringExtra(BluetoothLeService.ACTION_BATTERY_LEVEL);
+
                 bleData = bleData.replaceAll("\\s", "");
                 Log.wtf(TAG, "Received data: " + bleData);
 
