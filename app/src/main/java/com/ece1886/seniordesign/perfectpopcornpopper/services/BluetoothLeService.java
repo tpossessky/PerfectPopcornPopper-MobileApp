@@ -147,7 +147,6 @@ public class BluetoothLeService extends Service {
                 } else {
                     Log.wtf(TAG, "Gatt server data read completed.");
                     broadcastUpdate(ACTION_DATA_READ_COMPLETED);
-                    disconnect();
                 }
             }
         }
